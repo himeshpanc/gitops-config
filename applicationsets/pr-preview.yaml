@@ -45,7 +45,7 @@ spec:
               repository: "rocket-apps"
               commitSha: "{{.head_sha}}"
       destination:
-        server: https://kubernetes.default.svc
+        name: himesh-corp-mac
         namespace: 'preview-rocket-apps-{{.number}}'
       syncPolicy:
         automated:
