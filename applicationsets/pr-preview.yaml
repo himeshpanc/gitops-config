@@ -28,11 +28,11 @@ spec:
         requeueAfterSeconds: 180  # Check every 3 minutes
   template:
     metadata:
-      name: '{{.repository}}-pr-{{.number}}'
+      name: '{{.branch.repo}}-pr-{{.number}}'
       labels:
         preview: "true"
         pr-number: "{{.number}}"
-        repository: "{{.repository}}"
+        repo: "{{.branch.repo}}"
         author: "{{.author}}"
       annotations:
         pullrequest.url: "{{.url}}"
@@ -50,13 +50,13 @@ spec:
             global:
               environment: preview
               prNumber: "{{.number}}"
-              branch: "{{.branch}}"
-              repository: "{{.repository}}"
+              branch: "{{.branch.name}}"
+              repository: "{{.branch.repo}}"
               commitSha: "{{.head_sha}}"
               author: "{{.author}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: 'preview-{{.repository}}-{{.number}}'
+        namespace: 'preview-{{.branch.repo}}-{{.number}}'
       syncPolicy:
         automated:
           prune: true
