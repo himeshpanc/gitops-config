@@ -5,7 +5,6 @@ metadata:
   namespace: argocd
   annotations:
     description: "Automatically creates preview environments for PRs across all repos"
-    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -49,7 +48,7 @@ spec:
       source:
         repoURL: '{{.url}}'  # Using .url from scmProvider
         targetRevision: '{{.head_sha}}'
-        path: '{{ if hasPrefix "charts/" .path }}{{.path}}{{ else }}charts/{{.repository}}{{ end }}'
+        path: 'charts'
         helm:
           valueFiles:
             - values.yaml
