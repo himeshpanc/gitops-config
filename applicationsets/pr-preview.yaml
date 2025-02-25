@@ -28,11 +28,11 @@ spec:
         requeueAfterSeconds: 180  # Check every 3 minutes
   template:
     metadata:
-      name: '{{.branch.repo}}-pr-{{.number}}'
+      name: 'rocket-apps-pr-{{.number}}'
       labels:
         preview: "true"
         pr-number: "{{.number}}"
-        repo: "{{.branch.repo}}"
+        repo: "rocket-apps"
         author: "{{.author}}"
       annotations:
         pullrequest.url: "{{.url}}"
@@ -50,13 +50,13 @@ spec:
             global:
               environment: preview
               prNumber: "{{.number}}"
-              branch: "{{.branch.name}}"
-              repository: "{{.branch.repo}}"
+              branch: "{{.branch}}"
+              repository: "rocket-apps"
               commitSha: "{{.head_sha}}"
               author: "{{.author}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: 'preview-{{.branch.repo}}-{{.number}}'
+        namespace: 'preview-rocket-apps-{{.number}}'
       syncPolicy:
         automated:
           prune: true
