@@ -16,8 +16,8 @@ spec:
         github:
           # The GitHub organization or user
           owner: himeshpanc
-          # Monitor all repositories
-          repo: "*"
+          # Specify the exact repository name
+          repo: "rocket-apps"
           # Reference to the secret containing the token
           tokenRef:
             secretName: github-pr-token
