@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: org-pr-preview-apps
+  namespace: argocd
+  annotations:
+    description: "Automatically creates preview environments for PRs across all repos"
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - scmProvider:
+              cloneProtocol: https
+              github:
+                organization: himeshpanc
+                allBranches: false  # Only scan default branch for charts
+                tokenRef:
+                  secretName: github-pr-token
+                  key: token
+              filters:
+                - repositoryMatch: ".*"  # Match all repositories
+                  pathsExist: 
+                    - "charts"           # Standard charts directory
+                    - "*/charts"         # Nested charts directory
+          - pullRequest:
+              github:
+                owner: himeshpanc
+                repo: '{{.repository}}'
+                tokenRef:
+                  secretName: github-pr-token
+                  key: token
+                labels:
+                  - preview-env
+              requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: '{{.repository}}-pr-{{.number}}'
+      labels:
+        preview: "true"
+        pr-number: "{{.number}}"
+        repository: "{{.repository}}"
+    spec:
+      project: default
+      source:
+        repoURL: '{{.url}}'  # Using .url from scmProvider
+        targetRevision: '{{.head_sha}}'
+        path: '{{ if hasPrefix "charts/" .path }}{{.path}}{{ else }}charts/{{.repository}}{{ end }}'
+        helm:
+          valueFiles:
+            - values.yaml
+          values: |
+            global:
+              environment: preview
+              prNumber: "{{.number}}"
+              repository: "{{.repository}}"
+              branch: "{{.branch}}"
+              commitSha: "{{.sha}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'preview-{{.repository}}-{{.number}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
