@@ -51,3 +51,15 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pr-preview-placeholder
+  namespace: argocd
+data:
+  info: "PR Preview ApplicationSet is active and monitoring for labeled PRs"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
