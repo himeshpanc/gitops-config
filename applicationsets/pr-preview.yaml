@@ -45,7 +45,7 @@ spec:
               repository: "rocket-apps"
               commitSha: "{{.head_sha}}"
       destination:
-        name: default
+        server: https://kubernetes.default.svc
         namespace: 'preview-rocket-apps-{{.number}}'
       syncPolicy:
         automated:
