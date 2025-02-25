@@ -42,7 +42,6 @@ spec:
             prNumber: "{{.number}}"
             branch: "{{.branch}}"
       destination:
-        server: https://kubernetes.default.svc
         name: himesh-corp-mac
         # Create namespace per PR
         namespace: '{{.repository}}-pr-{{.number}}'
