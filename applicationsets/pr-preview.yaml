@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: pr-preview-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - pullRequest:
+        github:
+          # The GitHub organization or user
+          owner: your-org
+          # The repository to scan for pull requests
+          repo: your-repo
+          # Reference to the secret containing the token
+          tokenRef:
+            secretName: github-pr-token
+            key: token
+          # Labels to filter PRs
+          labels:
+            - preview-env
+        requeueAfterSeconds: 180  # Check every 3 minutes
+  template:
+    metadata:
+      name: '{{.repository}}-pr-{{.number}}'
+    spec:
+      project: default
+      source:
+        repoURL: '{{.source.repoURL}}'
+        targetRevision: '{{.head_sha}}'
+        path: charts/  # Your Helm chart path
+        helm:
+          valueFiles:
+            - values.yaml
+          # Optional: Add PR-specific values
+          values: |
+            environment: preview
+            prNumber: "{{.number}}"
+            branch: "{{.branch}}"
+      destination:
+        server: https://kubernetes.default.svc
+        # Create namespace per PR
+        namespace: '{{.repository}}-pr-{{.number}}'
+      syncPolicy:
+        automated:
+          prune: true  # Automatically delete resources
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
