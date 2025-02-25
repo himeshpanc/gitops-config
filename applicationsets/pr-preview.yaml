@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
   annotations:
     description: "Automatically creates preview environments for pull requests"
-    argocd.argoproj.io/sync-wave: "0"  # Ensure this syncs first
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -14,18 +14,14 @@ spec:
   generators:
     - pullRequest:
         github:
-          # The GitHub organization or user
           owner: himeshpanc
-          # Specify the exact repository name
           repo: "rocket-apps"
-          # Reference to the secret containing the token
           tokenRef:
             secretName: github-pr-token
             key: token
-          # Labels to filter PRs
           labels:
             - preview-env
-        requeueAfterSeconds: 180  # Check every 3 minutes
+        requeueAfterSeconds: 180
   template:
     metadata:
       name: 'rocket-apps-pr-{{.number}}'
@@ -33,10 +29,6 @@ spec:
         preview: "true"
         pr-number: "{{.number}}"
         repo: "rocket-apps"
-        author: "{{.author}}"
-      annotations:
-        pullrequest.url: "{{.url}}"
-        pullrequest.head_sha: "{{.head_sha}}"
     spec:
       project: default
       source:
@@ -50,10 +42,8 @@ spec:
             global:
               environment: preview
               prNumber: "{{.number}}"
-              branch: "{{.branch}}"
               repository: "rocket-apps"
               commitSha: "{{.head_sha}}"
-              author: "{{.author}}"
       destination:
         server: https://kubernetes.default.svc
         namespace: 'preview-rocket-apps-{{.number}}'
