@@ -1,10 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: pr-preview-apps
-  namespace: argocd
+  name: himesh-corp-mac
+  namespace: default
 spec:
   goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
   generators:
     - pullRequest:
         github:
@@ -23,6 +24,9 @@ spec:
   template:
     metadata:
       name: '{{.repository}}-pr-{{.number}}'
+      labels:
+        preview: "true"
+        pr-number: "{{.number}}"
     spec:
       project: default
       source:
