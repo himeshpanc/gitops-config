@@ -45,7 +45,7 @@ spec:
               repository: "rocket-apps"
               commitSha: "{{.head_sha}}"
       destination:
-        name: himesh-corp-mac
+        name: default
         namespace: 'preview-rocket-apps-{{.number}}'
       syncPolicy:
         automated:
