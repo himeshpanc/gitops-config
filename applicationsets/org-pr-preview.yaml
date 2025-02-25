@@ -4,7 +4,7 @@ metadata:
   name: org-pr-preview-apps
   namespace: argocd
   annotations:
-    description: "Automatically creates preview environments for PRs across all repos"
+    description: "Automatically creates preview environments for PRs across demo apps"
     argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -17,13 +17,15 @@ spec:
           - scmProvider:
               cloneProtocol: https
               github:
-                organization: himeshpanc
+                # Change from organization to user
+                owner: himeshpanc
+                type: user
                 allBranches: false  # Only scan default branch for charts
                 tokenRef:
                   secretName: github-pr-token
                   key: token
               filters:
-                - repositoryMatch: ".*"  # Match all repositories
+                - repositoryMatch: "apollo-app-[1-3]$"  # Matches apollo-app-1, apollo-app-2, apollo-app-3
                   pathsExist: 
                     - "charts"           # Standard charts directory
                     - "*/charts"         # Nested charts directory
