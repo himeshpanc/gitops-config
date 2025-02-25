@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: himesh-corp-mac
+  name: pr-preview-apps
   namespace: default
 spec:
   goTemplate: true
@@ -10,9 +10,9 @@ spec:
     - pullRequest:
         github:
           # The GitHub organization or user
-          owner: your-org
+          owner: himeshpanc
           # The repository to scan for pull requests
-          repo: your-repo
+          repo: "*"
           # Reference to the secret containing the token
           tokenRef:
             secretName: github-pr-token
@@ -32,7 +32,7 @@ spec:
       source:
         repoURL: '{{.source.repoURL}}'
         targetRevision: '{{.head_sha}}'
-        path: charts/  # Your Helm chart path
+        path: apollo-app/charts/apollo
         helm:
           valueFiles:
             - values.yaml
@@ -43,6 +43,7 @@ spec:
             branch: "{{.branch}}"
       destination:
         server: https://kubernetes.default.svc
+        name: himesh-corp-mac
         # Create namespace per PR
         namespace: '{{.repository}}-pr-{{.number}}'
       syncPolicy:
