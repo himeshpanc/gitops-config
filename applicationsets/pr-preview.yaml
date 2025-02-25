@@ -3,6 +3,11 @@ kind: ApplicationSet
 metadata:
   name: pr-preview-apps
   namespace: argocd
+  annotations:
+    description: "Automatically creates preview environments for pull requests"
+    argocd.argoproj.io/sync-wave: "0"  # Ensure this syncs first
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
@@ -11,7 +16,7 @@ spec:
         github:
           # The GitHub organization or user
           owner: himeshpanc
-          # The repository to scan for pull requests
+          # Monitor all repositories
           repo: "*"
           # Reference to the secret containing the token
           tokenRef:
@@ -27,30 +32,40 @@ spec:
       labels:
         preview: "true"
         pr-number: "{{.number}}"
+        repository: "{{.repository}}"
+        author: "{{.author}}"
+      annotations:
+        pullrequest.url: "{{.url}}"
+        pullrequest.head_sha: "{{.head_sha}}"
     spec:
       project: default
       source:
         repoURL: '{{.source.repoURL}}'
         targetRevision: '{{.head_sha}}'
-        path: apollo-app/charts/apollo
+        path: 'apollo-app/charts/apollo'
         helm:
           valueFiles:
             - values.yaml
-          # Optional: Add PR-specific values
           values: |
-            environment: preview
-            prNumber: "{{.number}}"
-            branch: "{{.branch}}"
+            global:
+              environment: preview
+              prNumber: "{{.number}}"
+              branch: "{{.branch}}"
+              repository: "{{.repository}}"
+              commitSha: "{{.head_sha}}"
+              author: "{{.author}}"
       destination:
-        name: himesh-corp-mac
-        # Create namespace per PR
-        namespace: '{{.repository}}-pr-{{.number}}'
+        server: https://kubernetes.default.svc
+        namespace: 'preview-{{.repository}}-{{.number}}'
       syncPolicy:
         automated:
-          prune: true  # Automatically delete resources
+          prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+
 ---
 
 apiVersion: v1
@@ -61,5 +76,3 @@ metadata:
 data:
   info: "PR Preview ApplicationSet is active and monitoring for labeled PRs"
 ---
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
